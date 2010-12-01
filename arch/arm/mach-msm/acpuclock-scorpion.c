@@ -76,7 +76,7 @@ struct clkctl_acpu_speed {
 struct clkctl_acpu_speed acpu_freq_tbl[] = {
 	{  19200, CCTL(CLK_TCXO, 1),		SRC_RAW, 0, 0, 925, 14000}, 
 	{ 128000, CCTL(CLK_TCXO, 1),		SRC_AXI, 0, 0, 925, 14000 }, 
-	{ 245760, CCTL(CLK_MODEM_PLL, 1),	SRC_RAW, 0, 0, 925, 29000 }, 
+	{ 245000, CCTL(CLK_MODEM_PLL, 1),	SRC_RAW, 0, 0, 925, 29000 }, 
 	{ 384000, CCTL(CLK_TCXO, 1), 		SRC_SCPLL, 0x0A, 0, 975, 58000 },
 	{ 422400, CCTL(CLK_TCXO, 1), 		SRC_SCPLL, 0x0B, 0, 975, 117000 },
 	{ 460800, CCTL(CLK_TCXO, 1), 		SRC_SCPLL, 0x0C, 0, 1000, 117000 },
@@ -127,7 +127,7 @@ static void __init acpuclk_init_cpufreq_table(void)
 		/* Define speeds that we want to skip */
 		if (/* acpu_freq_tbl[i].acpu_khz == 256000 || */
 				acpu_freq_tbl[i].acpu_khz == 19200 ||
-				acpu_freq_tbl[i].acpu_khz == 128000 ||
+//				acpu_freq_tbl[i].acpu_khz == 128000 ||
 				acpu_freq_tbl[i].acpu_khz == 256000)
                         continue;
 
@@ -506,15 +506,15 @@ static void __init acpuclk_init(void)
 		BUG();
 	}
 
-	/* Move to 768MHz for boot, which is a safe frequency
-	 * for all versions of Scorpion at the moment.
+	/* Move to 998MHz for boot, which is a safe frequency
+	 * for Incredible at the moment.
 	 */
 	speed = acpu_freq_tbl;
 	for (;;) {
-		if (speed->acpu_khz == 768000)
+		if (speed->acpu_khz == 998400)
 			break;
 		if (speed->acpu_khz == 0) {
-			pr_err("acpuclk_init: cannot find 768MHz\n");
+			pr_err("acpuclk_init: cannot find 998MHz\n");
 			BUG();
 		}
 		speed++;
