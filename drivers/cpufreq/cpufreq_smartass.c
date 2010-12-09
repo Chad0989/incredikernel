@@ -64,14 +64,14 @@ static unsigned int suspended;
  * The minimum amount of time to spend at a frequency before we can ramp down,
  * default is 45ms.
  */
-#define DEFAULT_DOWN_RATE_US 88000;
+#define DEFAULT_DOWN_RATE_US 40000
 static unsigned long down_rate_us;
 
 /*
  * When ramping up frequency with no idle cycles jump to at least this frequency.
  * Zero disables. Set a very high value to jump to policy max freqeuncy.
  */
-#define DEFAULT_UP_MIN_FREQ 1190400;
+#define DEFAULT_UP_MIN_FREQ 0
 static unsigned int up_min_freq;
 
 /*
@@ -80,16 +80,15 @@ static unsigned int up_min_freq;
  * to minimize wakeup issues.
  * Set sleep_max_freq=0 to disable this behavior.
  */
-
-// #define DEFAULT_SLEEP_MAX_FREQ CONFIG_MSM_CPU_FREQ_ONDEMAND_MIN
-#define DEFAULT_SLEEP_MAX_FREQ 245000
+#define DEFAULT_SLEEP_MAX_FREQ CONFIG_MSM_CPU_FREQ_ONDEMAND_MIN
 static unsigned int sleep_max_freq;
 
 /*
  * The frequency to set when waking up from sleep.
  * When sleep_max_freq=0 this will have no effect.
  */
-#define DEFAULT_SLEEP_WAKEUP_FREQ CONFIG_MSM_CPU_FREQ_ONDEMAND_MAX
+//#define DEFAULT_SLEEP_WAKEUP_FREQ CONFIG_MSM_CPU_FREQ_ONDEMAND_MAX
+#define DEFAULT_SLEEP_WAKEUP_FREQ 576000
 static unsigned int sleep_wakeup_freq;
 
 /*
@@ -97,7 +96,7 @@ static unsigned int sleep_wakeup_freq;
  * go below this frequency.
  * Set awake_min_freq=0 to disable this behavior.
  */
-#define DEFAULT_AWAKE_MIN_FREQ 384000
+#define DEFAULT_AWAKE_MIN_FREQ 245000
 static unsigned int awake_min_freq;
 
 /*
@@ -110,25 +109,25 @@ static unsigned int sample_rate_jiffies;
  * Freqeuncy delta when ramping up.
  * zero disables causes to always jump straight to max frequency.
  */
-#define DEFAULT_RAMP_UP_STEP 352000
+#define DEFAULT_RAMP_UP_STEP 128000
 static unsigned int ramp_up_step;
 
 /*
  * Max freqeuncy delta when ramping down. zero disables.
  */
-#define DEFAULT_MAX_RAMP_DOWN 352000
+#define DEFAULT_MAX_RAMP_DOWN 245000
 static unsigned int max_ramp_down;
 
 /*
  * CPU freq will be increased if measured load > max_cpu_load;
  */
-#define DEFAULT_MAX_CPU_LOAD 75
+#define DEFAULT_MAX_CPU_LOAD 70
 static unsigned long max_cpu_load;
 
 /*
  * CPU freq will be decreased if measured load < min_cpu_load;
  */
-#define DEFAULT_MIN_CPU_LOAD 35
+#define DEFAULT_MIN_CPU_LOAD 30
 static unsigned long min_cpu_load;
 
 
