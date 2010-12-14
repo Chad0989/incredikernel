@@ -88,7 +88,7 @@ static unsigned int sleep_max_freq;
  * When sleep_max_freq=0 this will have no effect.
  */
 //#define DEFAULT_SLEEP_WAKEUP_FREQ CONFIG_MSM_CPU_FREQ_ONDEMAND_MAX
-#define DEFAULT_SLEEP_WAKEUP_FREQ 0
+#define DEFAULT_SLEEP_WAKEUP_FREQ 768000
 static unsigned int sleep_wakeup_freq;
 
 /*
