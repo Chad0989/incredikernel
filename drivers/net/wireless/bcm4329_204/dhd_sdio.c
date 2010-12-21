@@ -2,13 +2,13 @@
  * DHD Bus Module for SDIO
  *
  * Copyright (C) 1999-2010, Broadcom Corporation
- * 
+ *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
  * under the terms of the GNU General Public License version 2 (the "GPL"),
  * available at http://www.broadcom.com/licenses/GPLv2.php, with the
  * following added to such license:
- * 
+ *
  *      As a special exception, the copyright holders of this software give you
  * permission to link this software with independent modules, and to copy and
  * distribute the resulting executable under terms of your choice, provided that
@@ -16,7 +16,7 @@
  * the license of that module.  An independent module is a module which is not
  * derived from this software.  The special exception does not apply to any
  * modifications of the software.
- * 
+ *
  *      Notwithstanding the above, under no circumstances may you combine this
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
@@ -2445,6 +2445,8 @@ dhd_bus_stop(struct dhd_bus *bus, bool enforce_mutex)
 	if (enforce_mutex)
 		dhd_os_sdlock(bus->dhd);
 
+	myprintf("%s enter\n", __func__);
+
 	BUS_WAKE(bus);
 
 	/* Enable clock for device interrupts */
@@ -3798,6 +3800,21 @@ dhdsdio_hostmail(dhd_bus_t *bus)
 	return intstatus;
 }
 
+#ifdef MMC_RECOVER
+static uint8 prev_tx_seq = 0;
+static uint8 prev_tx_max = 0;
+static int max_equal_count = 0;
+static int start_mmc_recover = 0;
+void dhdsdio_set_mmc_recover(int set)
+{
+	// myprintf("set mmc recover %d\n", set);
+	if (set)
+		start_mmc_recover = 1;
+	else
+		start_mmc_recover = 0;
+}
+#endif
+
 static int dhdsdio_regfail = 0;
 bool
 dhdsdio_dpc(dhd_bus_t *bus)
@@ -3957,6 +3974,28 @@ clkwait:
 		bcmsdh_intr_enable(sdh);
 	}
 
+#ifdef MMC_RECOVER
+	if (start_mmc_recover) {
+		if ((bus->tx_max == bus->tx_seq)&&(bus->tx_max == prev_tx_max)&&(bus->tx_seq == prev_tx_seq)) {
+			max_equal_count++;
+			//myprintf("bad case, count %d\n", max_equal_count);
+			//myprintf("framecnt = %d\n", framecnt);
+		} else {
+			max_equal_count = 0;
+		}
+
+		prev_tx_max = bus->tx_max;
+		prev_tx_seq = bus->tx_seq;
+
+		if (max_equal_count >= 5) {
+			bus->tx_seq = (bus->tx_seq + 1) % SDPCM_SEQUENCE_WRAP;
+			//bus->tx_max = bus->tx_seq + 2;
+			max_equal_count = 0;
+			//myprintf("reset count\n");
+		}
+	}
+#endif
+
 	if (DATAOK(bus) && bus->ctrl_frame_stat) {
 		int ret, i;
 
@@ -4102,7 +4141,7 @@ dhdsdio_isr(void *arg)
 #else
 	bus->dpc_sched = TRUE;
 	dhd_sched_dpc(bus->dhd);
-#endif 
+#endif
 
 }
 
@@ -5012,9 +5051,11 @@ dhdsdio_release(dhd_bus_t *bus, osl_t *osh)
 
 		if (bus->dhd) {
 
-			dhdsdio_release_dongle(bus, osh);
-
+			/* BRCM: anthony: move dhd_detach before dhdsdio_release_dongle
+			 * to avoid unnecessary commands running.
+			 */
 			dhd_detach(bus->dhd);
+			dhdsdio_release_dongle(bus, osh);
 			bus->dhd = NULL;
 		}
 
@@ -5064,11 +5105,11 @@ dhdsdio_release_dongle(dhd_bus_t *bus, osl_t *osh)
 		return;
 
 	if (bus->sih) {
-		dhdsdio_clkctl(bus, CLK_AVAIL, FALSE);
 #if !defined(BCMLXSDMMC)
+		dhdsdio_clkctl(bus, CLK_AVAIL, FALSE);
 		si_watchdog(bus->sih, 4);
-#endif /* !defined(BCMLXSDMMC) */
 		dhdsdio_clkctl(bus, CLK_NONE, FALSE);
+#endif /* !defined(BCMLXSDMMC) */
 		si_detach(bus->sih);
 		if (bus->vars && bus->varsz)
 			MFREE(osh, bus->vars, bus->varsz);
@@ -5564,7 +5605,7 @@ dhd_bus_devreset(dhd_pub_t *dhdp, uint8 flag)
 #if !defined(IGNORE_ETH0_DOWN)
 					/* Restore flow control  */
 					dhd_txflowcontrol(bus->dhd, 0, OFF);
-#endif 
+#endif
 
 					DHD_TRACE(("%s: WLAN ON DONE\n", __FUNCTION__));
 				} else

@@ -413,6 +413,7 @@ enum dhdhtc_pwr_ctrl{
 	DHDHTC_POWER_CTRL_BROWSER_LOAD_PAGE,
 	DHDHTC_POWER_CTRL_USER_CONFIG,
 	DHDHTC_POWER_CTRL_WIFI_PHONE,
+	DHDHTC_POWER_CTRL_FOTA_DOWNLOADING,
 	DHDHTC_POWER_CTRL_MAX_NUM,
 };
 extern int dhdhtc_update_wifi_power_mode(int is_screen_off);
@@ -420,5 +421,8 @@ extern int dhdhtc_set_power_control(int power_mode, unsigned int reason);
 extern unsigned int dhdhtc_get_cur_pwr_ctrl(void);
 extern int dhdhtc_update_dtim_listen_interval(int is_screen_off);
 
+#ifdef MMC_RECOVER
+void dhdsdio_set_mmc_recover(int set);
+#endif
 
 #endif /* _dhd_h_ */
